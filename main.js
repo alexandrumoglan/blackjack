@@ -1,3 +1,16 @@
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: false
+});
+
+let playerCardValue=0;
+let playerCardNames=[];
+let dealerCardValue=0;
+let dealerCardNames=[];
+
 let cards=[
     {value:1, unicode:"🃑", name:"Ace of Clubs", id:0},
     {value:2, unicode:"🃒", name: "2 of Clubs", id:1},
@@ -53,9 +66,86 @@ let cards=[
     {value:10, unicode:"🂮", name: "King of Spades", id:51}
 ]
 
+let playerHand = []
 
-function getRandom() {
-    return Math.random();
+let dealerHand = []
+
+
+function getRandomArbitrary(min, max) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+//console.log(cards[getRandomArbitrary(0,51)]);
+
+function cardsValue(card){
+  console.log(card)
+  value=value + card.value
+  console.log("value: " + value)
+}
+
+function playerGetCards(){
+  let newCard = getRandomArbitrary(0,51)
+  playerHand.push(cards[newCard])
+  playerCardValue = playerCardValue+cards[newCard].value
+  playerCardNames.push(cards[newCard].name)
+  console.log("You have " + (playerCardValue) + " from the cards: "+ playerCardNames)
+}
+
+function dealerGetCards(){
+  let newCard = getRandomArbitrary(0,51)
+  dealerHand.push(cards[newCard])
+  dealerCardValue = dealerCardValue + cards[newCard].value
+  dealerCardNames.push(cards[newCard].name)
+  console.log("Dealer has " + dealerCardValue + " from the cards: "+ dealerCardNames)
+  if(dealerCardValue==21){
+    console.log("Dealer blackjack!")
   }
+  if(dealerCardValue>21){
+    console.log("Dealer bust!")
+  }
+}
 
-console.log(cards[getRandom(52)]);
+function promptPlayer(){
+  rl.question('Hit ⏎ or Stand ␣ ?', (input) => {
+    if (input === '' && playerCardValue<22) {
+      console.log("Hit")
+      playerGetCards()
+      if (playerCardValue<21){
+        promptPlayer()
+      }
+      if (playerCardValue == 21){
+        console.log("Blackjack!")
+        dealerGetCards()
+      }
+      if (playerCardValue >21){
+        console.log("Bust!")
+      }
+    } else if (input === ' ') {
+      console.log("Stand")
+      console.log("Dealer's turn")
+      dealerGetCards()
+      while (dealerCardValue<=17){
+        dealerGetCards()
+      }
+    } else {
+      console.log('Invalid input. Please enter either ⏎ for hit or ␣ for stand.');
+      promptPlayer();
+    }
+  });
+}
+
+
+function game(){
+  playerGetCards()
+  dealerGetCards()
+  playerGetCards()
+  dealerGetCards()
+  if (playerCardValue<21){
+    promptPlayer()
+  }
+}
+
+game()
+
+//de facut cazul in care jucatorul si dealerul au 21
+//de facut verificarea asului in functie de celalalte carti
+//de imbunatatit vizual
