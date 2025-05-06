@@ -8,8 +8,12 @@ const rl = readline.createInterface({
 
 let playerCardValue=0;
 let playerCardNames=[];
+let playerHand = []
 let dealerCardValue=0;
 let dealerCardNames=[];
+let dealerHand = []
+
+//cod repetitiv dar nu am gasit alta metoda care sa ma lase sa pun si unicod sau imagine
 
 let cards=[
     {value:1, unicode:"🃑", name:"Ace of Clubs", id:0},
@@ -66,35 +70,58 @@ let cards=[
     {value:10, unicode:"🂮", name: "King of Spades", id:51}
 ]
 
-let playerHand = []
-
-let dealerHand = []
-
+//numar la intamplare pentru id-ul cartii
 
 function getRandomArbitrary(min, max) {
   return Math.floor(Math.random() * (max - min) + min);
 }
-//console.log(cards[getRandomArbitrary(0,51)]);
 
-function cardsValue(card){
-  console.log(card)
-  value=value + card.value
-  console.log("value: " + value)
-}
 
+//jucatorul isi primeste cartile
 function playerGetCards(){
   let newCard = getRandomArbitrary(0,51)
+  if (playerHand.includes(cards[newCard]) || dealerHand.includes(cards[newCard])){
+    newCard = getRandomArbitrary(0,51)
+  }
   playerHand.push(cards[newCard])
   playerCardValue = playerCardValue+cards[newCard].value
   playerCardNames.push(cards[newCard].name)
+
+
+  //verific daca jucatorul are un as (aici am pornit de la ideea gresita ca asul este 11 doar cand are langa el o carte de 10)
+/////////////////////////////////////////
+//de incercat
+//optiune 1 boolean daca exista un ace
+
+  if (playerHand.length==2 && playerCardNames[0].split(" ")[0].includes("Jack", "Queen", "King", "10") && playerCardNames[1].includes("Ace")){
+    playerCardValue=playerCardValue+10;
+  }
+  if (playerHand.length==2 && playerCardNames[1].split(" ")[0].includes("Jack", "Queen", "King", "10") && playerCardNames[0].includes("Ace")){
+    playerCardValue=playerCardValue+10;
+  }
   console.log("You have " + (playerCardValue) + " from the cards: "+ playerCardNames)
 }
 
+
+//dealerul isi primeste cartile
 function dealerGetCards(){
   let newCard = getRandomArbitrary(0,51)
+  if (dealerHand.includes(cards[newCard]) || playerHand.includes(cards[newCard]) ){
+    newCard = getRandomArbitrary(0,51)
+  }
   dealerHand.push(cards[newCard])
   dealerCardValue = dealerCardValue + cards[newCard].value
   dealerCardNames.push(cards[newCard].name)
+  //aceeasi poveste ca la jucator
+  if (dealerHand.length==2 && dealerCardNames[0].split(" ")[0].includes("Jack", "Queen", "King") && dealerCardNames[1].includes("Ace")){
+    dealerCardValue=dealerCardValue+10;
+  }
+  if (dealerHand.length==2 && dealerCardNames[1].split(" ")[0].includes("Jack", "Queen", "King") && dealerCardNames[0].includes("Ace")){
+    dealerCardValue=dealerCardValue+10;
+  }
+
+/////////////////////////////////////
+
   console.log("Dealer has " + dealerCardValue + " from the cards: "+ dealerCardNames)
   if(dealerCardValue==21){
     console.log("Dealer blackjack!")
@@ -104,6 +131,8 @@ function dealerGetCards(){
   }
 }
 
+
+//aici jucatorul este intrebat daca doreste carti + logica principala a jocului
 function promptPlayer(){
   rl.question('Hit ⏎ or Stand ␣ ?', (input) => {
     if (input === '' && playerCardValue<22) {
@@ -118,13 +147,25 @@ function promptPlayer(){
       }
       if (playerCardValue >21){
         console.log("Bust!")
+        if (dealerCardValue<18){
+          dealerGetCards()
+        }
       }
+      //nu mi-a mers sa folosesc un listener doar pentru taste asa ca trebuie folosit spatiu si enter
     } else if (input === ' ') {
       console.log("Stand")
       console.log("Dealer's turn")
-      dealerGetCards()
       while (dealerCardValue<=17){
         dealerGetCards()
+        if (dealerCardValue==playerCardValue || dealerCardValue==playerCardValue==21){
+          console.log("Push!")
+        }
+      }
+      if (dealerCardValue<21 && playerCardValue<21 && playerCardValue>dealerCardValue){
+        console.log("The player wins!")
+      }
+      if (dealerCardValue<21 && playerCardValue<21 && playerCardValue<dealerCardValue){
+        console.log("The dealer wins!")
       }
     } else {
       console.log('Invalid input. Please enter either ⏎ for hit or ␣ for stand.');
@@ -132,20 +173,22 @@ function promptPlayer(){
     }
   });
 }
-
-
+//logica jocului si mai mult cod repetitiv
 function game(){
   playerGetCards()
   dealerGetCards()
   playerGetCards()
   dealerGetCards()
+  //am avut problema ca jucatorul sau dealerul sa aiba blackjack din primele 2 carti si tot sa fie intrebat daca mai doreste carti asa ca am pus si aici verificarea
   if (playerCardValue<21){
     promptPlayer()
+  } else console.log("Blackjack!")
+  if (dealerCardValue==21){
+    console.log("Dealer blackjack!")
   }
 }
 
 game()
 
-//de facut cazul in care jucatorul si dealerul au 21
-//de facut verificarea asului in functie de celalalte carti
+//asul sa fie 11 in anumite conditii DE REFACUT
 //de imbunatatit vizual
